@@ -1,8 +1,8 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
-#include "qsvgiconengine.h"
+// SPDX-License-Identifier: LGPL-3.0-only
+#include "recoloringsvgiconengine.h"
 
-#ifndef QT_NO_SVGRENDERER
+// clang-format off
 
 #include "qpainter.h"
 #include "qpixmap.h"
@@ -23,7 +23,7 @@
 #include <QPalette>
 #include <QXmlStreamReader>
 
-QT_BEGIN_NAMESPACE
+namespace tremotesf {
 
 namespace {
 
@@ -57,10 +57,10 @@ enum FileType { OtherFile, SvgFile, CompressedSvgFile };
 
 static FileType fileType(const QFileInfo &fi);
 
-class QSvgIconEnginePrivate : public QSharedData
+class RecoloringSvgIconEnginePrivate : public QSharedData
 {
 public:
-    QSvgIconEnginePrivate()
+    RecoloringSvgIconEnginePrivate()
     {
         stepSerialNum();
     }
@@ -97,15 +97,15 @@ public:
     static QAtomicInt lastSerialNum;
 };
 
-QAtomicInt QSvgIconEnginePrivate::lastSerialNum;
+QAtomicInt RecoloringSvgIconEnginePrivate::lastSerialNum;
 
-QSvgIconEngine::QSvgIconEngine()
-    : d(new QSvgIconEnginePrivate)
+RecoloringSvgIconEngine::RecoloringSvgIconEngine()
+    : d(new RecoloringSvgIconEnginePrivate)
 {
 }
 
-QSvgIconEngine::QSvgIconEngine(const QSvgIconEngine &other)
-    : QIconEngine(other), d(new QSvgIconEnginePrivate)
+RecoloringSvgIconEngine::RecoloringSvgIconEngine(const RecoloringSvgIconEngine &other)
+    : QIconEngine(other), d(new RecoloringSvgIconEnginePrivate)
 {
     d->svgFiles = other.d->svgFiles;
     d->svgBuffers = other.d->svgBuffers;
@@ -113,12 +113,12 @@ QSvgIconEngine::QSvgIconEngine(const QSvgIconEngine &other)
 }
 
 
-QSvgIconEngine::~QSvgIconEngine()
+RecoloringSvgIconEngine::~RecoloringSvgIconEngine()
 {
 }
 
 
-QSize QSvgIconEngine::actualSize(const QSize &size, QIcon::Mode mode,
+QSize RecoloringSvgIconEngine::actualSize(const QSize &size, QIcon::Mode mode,
                                  QIcon::State state)
 {
     if (!d->addedPixmaps.isEmpty()) {
@@ -147,7 +147,7 @@ static inline QByteArray maybeUncompress(const QByteArray &ba)
 #endif
 }
 
-bool QSvgIconEnginePrivate::tryLoad(QSvgRenderer *renderer, QIcon::Mode tryMode, QIcon::State tryState, QIcon::Mode actualMode)
+bool RecoloringSvgIconEnginePrivate::tryLoad(QSvgRenderer *renderer, QIcon::Mode tryMode, QIcon::State tryState, QIcon::Mode actualMode)
 {
     const auto key = hashKey(tryMode, tryState);
     QByteArray buf = svgBuffers.value(key);
@@ -237,7 +237,7 @@ bool QSvgIconEnginePrivate::tryLoad(QSvgRenderer *renderer, QIcon::Mode tryMode,
     return false;
 }
 
-QIcon::Mode QSvgIconEnginePrivate::loadDataForModeAndState(QSvgRenderer *renderer, QIcon::Mode mode, QIcon::State state)
+QIcon::Mode RecoloringSvgIconEnginePrivate::loadDataForModeAndState(QSvgRenderer *renderer, QIcon::Mode mode, QIcon::State state)
 {
     if (tryLoad(renderer, mode, state, mode))
         return mode;
@@ -279,13 +279,13 @@ QIcon::Mode QSvgIconEnginePrivate::loadDataForModeAndState(QSvgRenderer *rendere
     return QIcon::Normal;
 }
 
-QPixmap QSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
+QPixmap RecoloringSvgIconEngine::pixmap(const QSize &size, QIcon::Mode mode,
                                QIcon::State state)
 {
     return scaledPixmap(size, mode, state, 1.0);
 }
 
-QPixmap QSvgIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state,
+QPixmap RecoloringSvgIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon::State state,
                                      qreal scale)
 {
     QPixmap pm;
@@ -301,7 +301,7 @@ QPixmap QSvgIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon:
         while (it != d->addedPixmaps.end() && it.key() == key) {
             const auto &pm = it.value();
             if (!pm.isNull()) {
-                // we don't care about dpr here - don't use QSvgIconEngine when
+                // we don't care about dpr here - don't use RecoloringSvgIconEngine when
                 // there are a lot of raster images are to handle.
                 if (pm.size() == realSize)
                     return pm;
@@ -344,7 +344,7 @@ QPixmap QSvgIconEngine::scaledPixmap(const QSize &size, QIcon::Mode mode, QIcon:
 }
 
 
-void QSvgIconEngine::addPixmap(const QPixmap &pixmap, QIcon::Mode mode,
+void RecoloringSvgIconEngine::addPixmap(const QPixmap &pixmap, QIcon::Mode mode,
                                QIcon::State state)
 {
     d->stepSerialNum();
@@ -370,7 +370,7 @@ static FileType fileType(const QFileInfo &fi)
     return OtherFile;
 }
 
-void QSvgIconEngine::addFile(const QString &fileName, const QSize &,
+void RecoloringSvgIconEngine::addFile(const QString &fileName, const QSize &,
                              QIcon::Mode mode, QIcon::State state)
 {
     if (!fileName.isEmpty()) {
@@ -395,7 +395,7 @@ void QSvgIconEngine::addFile(const QString &fileName, const QSize &,
     }
 }
 
-void QSvgIconEngine::paint(QPainter *painter, const QRect &rect,
+void RecoloringSvgIconEngine::paint(QPainter *painter, const QRect &rect,
                            QIcon::Mode mode, QIcon::State state)
 {
     QSize pixmapSize = rect.size();
@@ -404,25 +404,25 @@ void QSvgIconEngine::paint(QPainter *painter, const QRect &rect,
     painter->drawPixmap(rect, pixmap(pixmapSize, mode, state));
 }
 
-bool QSvgIconEngine::isNull()
+bool RecoloringSvgIconEngine::isNull()
 {
     return d->svgFiles.isEmpty() && d->addedPixmaps.isEmpty() && d->svgBuffers.isEmpty();
 }
 
-QString QSvgIconEngine::key() const
+QString RecoloringSvgIconEngine::key() const
 {
     return QLatin1String("svg");
 }
 
-QIconEngine *QSvgIconEngine::clone() const
+QIconEngine *RecoloringSvgIconEngine::clone() const
 {
-    return new QSvgIconEngine(*this);
+    return new RecoloringSvgIconEngine(*this);
 }
 
 
-bool QSvgIconEngine::read(QDataStream &in)
+bool RecoloringSvgIconEngine::read(QDataStream &in)
 {
-    d = new QSvgIconEnginePrivate;
+    d = new RecoloringSvgIconEnginePrivate;
 
     if (in.version() >= QDataStream::Qt_4_4) {
         int isCompressed;
@@ -435,7 +435,7 @@ bool QSvgIconEngine::read(QDataStream &in)
         }
 #else
         if (isCompressed) {
-            qWarning("QSvgIconEngine: Can not decompress SVG data");
+            qWarning("RecoloringSvgIconEngine: Can not decompress SVG data");
             d->svgBuffers.clear();
         }
 #endif
@@ -476,7 +476,7 @@ bool QSvgIconEngine::read(QDataStream &in)
 }
 
 
-bool QSvgIconEngine::write(QDataStream &out) const
+bool RecoloringSvgIconEngine::write(QDataStream &out) const
 {
     if (out.version() >= QDataStream::Qt_4_4) {
         int isCompressed = 0;
@@ -521,6 +521,4 @@ bool QSvgIconEngine::write(QDataStream &out) const
     return true;
 }
 
-QT_END_NAMESPACE
-
-#endif // QT_NO_SVGRENDERER
+}

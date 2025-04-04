@@ -1,22 +1,25 @@
 // Copyright (C) 2016 The Qt Company Ltd.
-// SPDX-License-Identifier: LicenseRef-Qt-Commercial OR LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only
+// SPDX-License-Identifier: LGPL-3.0-only
 
-#ifndef QSVGICONENGINE_H
-#define QSVGICONENGINE_H
+#ifndef TREMOTESF_RECOLORINGSVGICONENGINE_H
+#define TREMOTESF_RECOLORINGSVGICONENGINE_H
 
 #include <QtGui/qiconengine.h>
 #include <QtCore/qshareddata.h>
 
-QT_BEGIN_NAMESPACE
+// clang-format off
 
-class QSvgIconEnginePrivate;
+namespace tremotesf {
 
-class QSvgIconEngine : public QIconEngine
+class RecoloringSvgIconEnginePrivate;
+
+// QSvgIconEngine fork that injects CSS derived from current QPalette
+class RecoloringSvgIconEngine : public QIconEngine
 {
 public:
-    QSvgIconEngine();
-    QSvgIconEngine(const QSvgIconEngine &other);
-    ~QSvgIconEngine();
+    RecoloringSvgIconEngine();
+    RecoloringSvgIconEngine(const RecoloringSvgIconEngine&other);
+    ~RecoloringSvgIconEngine();
     void paint(QPainter *painter, const QRect &rect,
                QIcon::Mode mode, QIcon::State state) override;
     QSize actualSize(const QSize &size, QIcon::Mode mode,
@@ -37,9 +40,9 @@ public:
     bool read(QDataStream &in) override;
     bool write(QDataStream &out) const override;
 private:
-    QSharedDataPointer<QSvgIconEnginePrivate> d;
+    QSharedDataPointer<RecoloringSvgIconEnginePrivate> d;
 };
 
-QT_END_NAMESPACE
+}
 
 #endif
