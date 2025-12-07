@@ -41,7 +41,7 @@ public:
                 % HexString<qint8>(state)
                 % HexString<int>(size.width())
                 % HexString<int>(size.height())
-                % HexString<qint16>(qRound(scale * 1000));
+                % HexString<qint16>(static_cast<qint16>(qRound(scale * 1000)));
     }
 
     void stepSerialNum()
